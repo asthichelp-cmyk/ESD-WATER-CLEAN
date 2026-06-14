@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AquaAI — Clean Water & Sanitation Assistant</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+  :root {
+    --aqua-50:  #e0fafa;
+    --aqua-100: #b2f0f0;
+    --aqua-200: #7de4e4;
+    --aqua-400: #0dbdbd;
+    --aqua-500: #08a0a0;
+    --aqua-600: #057878;
+    --aqua-800: #024444;
+    --aqua-900: #011e1e;
+    --teal-accent: #00d4c8;
+    --surface: #f0fdfd;
+    --surface2: #e4f8f8;
+    --text-primary: #011e1e;
+    --text-secondary: #2a6464;
+    --text-muted: #5a9090;
+    --border: rgba(13,189,189,0.18);
+    --border-strong: rgba(13,189,189,0.38);
+    --white: #ffffff;
+    --danger: #d63030;
+    --warn-bg: #fff8e1;
+    --warn-text: #7a5200;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--surface);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: linear-gradient(135deg, var(--aqua-800) 0%, var(--aqua-600) 60%, var(--aqua-500) 100%);
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .header-ripple {
+    position: absolute; inset: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 60% 80% at 80% 50%, rgba(0,212,200,0.18) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 60% at 10% 80%, rgba(0,212,200,0.10) 0%, transparent 60%);
+  }
+
+  .header-inner {
+    position: relative; z-index: 1;
+    max-width: 900px; margin: 0 auto;
+    padding: 28px 24px 24px;
+    display: flex; align-items: center; gap: 18px;
+  }
+
+  .logo-drop {
+    width: 54px; height: 54px;
+    background: rgba(255,255,255,0.12);
+    border: 1.5px solid rgba(255,255,255,0.25);
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; flex-shrink: 0;
+  }
+
+  .header-text h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 22px; font-weight: 700;
+    color: #fff; letter-spacing: -0.3px;
+  }
+  .header-text p {
+    font-size: 13px; color: rgba(255,255,255,0.72);
+    margin-top: 3px; line-height: 1.4;
+  }
+
+  .sdg-badge {
+    margin-left: auto; flex-shrink: 0;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.22);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 11px; font-weight: 600;
+    color: rgba(255,255,255,0.9);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  /* ── TABS ── */
+  .tab-bar {
+    background: var(--aqua-800);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .tab-bar-inner {
+    max-width: 900px; margin: 0 auto;
+    display: flex; gap: 0; padding: 0 24px;
+  }
+  .tab-btn {
+    background: none; border: none; cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px; font-weight: 500;
+    color: rgba(255,255,255,0.55);
+    padding: 12px 18px;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
+    white-space: nowrap;
+  }
+  .tab-btn.active { color: var(--teal-accent); border-bottom-color: var(--teal-accent); }
+  .tab-btn:hover { color: rgba(255,255,255,0.85); }
+
+  /* ── MAIN ── */
+  main { flex: 1; max-width: 900px; margin: 0 auto; width: 100%; padding: 24px 24px 40px; }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── CHAT PANEL ── */
+  .chat-intro {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    display: flex; gap: 14px; align-items: flex-start;
+  }
+  .chat-intro-icon { font-size: 28px; flex-shrink: 0; margin-top: 2px; }
+  .chat-intro h2 { font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 600; color: var(--aqua-800); margin-bottom: 4px; }
+  .chat-intro p { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+
+  .quick-chips {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px;
+  }
+  .chip {
+    background: var(--white);
+    border: 1px solid var(--border-strong);
+    border-radius: 20px;
+    padding: 7px 14px;
+    font-size: 12px; font-weight: 500;
+    color: var(--aqua-600);
+    cursor: pointer;
+    transition: background 0.18s, transform 0.1s;
+  }
+  .chip:hover { background: var(--aqua-50); transform: translateY(-1px); }
+
+  .chat-box {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .messages {
+    min-height: 280px;
+    max-height: 420px;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex; flex-direction: column; gap: 14px;
+    scroll-behavior: smooth;
+  }
+
+  .msg { display: flex; gap: 10px; align-items: flex-start; }
+  .msg.user { flex-direction: row-reverse; }
+
+  .msg-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; flex-shrink: 0; margin-top: 2px;
+  }
+  .msg-avatar.ai { background: var(--aqua-500); color: #fff; font-size: 13px; font-weight: 600; }
+  .msg-avatar.user { background: var(--aqua-100); color: var(--aqua-800); }
+
+  .msg-bubble {
+    max-width: 78%;
+    padding: 11px 15px;
+    border-radius: 14px;
+    font-size: 14px; line-height: 1.65;
+  }
+  .msg.ai .msg-bubble {
+    background: var(--surface2);
+    color: var(--text-primary);
+    border-bottom-left-radius: 4px;
+  }
+  .msg.user .msg-bubble {
+    background: var(--aqua-500);
+    color: #fff;
+    border-bottom-right-radius: 4px;
+  }
+
+  .typing-dots {
+    display: inline-flex; gap: 4px; align-items: center; padding: 4px 0;
+  }
+  .typing-dots span {
+    width: 6px; height: 6px; background: var(--aqua-400);
+    border-radius: 50%; animation: bounce 1.2s infinite;
+  }
+  .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
+
+  .chat-input-row {
+    display: flex; gap: 10px; align-items: flex-end;
+    padding: 14px 16px;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .chat-input-row textarea {
+    flex: 1; border: 1.5px solid var(--border-strong);
+    border-radius: 10px; padding: 10px 14px;
+    font-family: 'Inter', sans-serif; font-size: 14px;
+    color: var(--text-primary); background: var(--white);
+    resize: none; outline: none; line-height: 1.5;
+    min-height: 42px; max-height: 120px;
+    transition: border-color 0.2s;
+  }
+  .chat-input-row textarea:focus { border-color: var(--aqua-400); }
+  .chat-input-row textarea::placeholder { color: var(--text-muted); }
+
+  .send-btn {
+    width: 42px; height: 42px;
+    background: var(--aqua-500); border: none; border-radius: 10px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: background 0.18s, transform 0.1s; flex-shrink: 0;
+  }
+  .send-btn:hover { background: var(--aqua-600); transform: scale(1.05); }
+  .send-btn:disabled { background: var(--aqua-200); cursor: not-allowed; transform: none; }
+  .send-btn svg { width: 18px; height: 18px; fill: white; }
+
+  /* ── WATER QUALITY CHECKER ── */
+  .checker-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  }
+  @media(max-width:600px){ .checker-grid { grid-template-columns: 1fr; } }
+
+  .param-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px;
+  }
+  .param-card label {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 13px; font-weight: 500; color: var(--text-secondary);
+    margin-bottom: 10px;
+  }
+  .param-card label span { font-size: 16px; font-weight: 600; color: var(--aqua-600); }
+
+  .param-card input[type=range] {
+    width: 100%; accent-color: var(--aqua-400); cursor: pointer;
+  }
+  .param-status {
+    margin-top: 10px; font-size: 12px; font-weight: 500;
+    padding: 4px 10px; border-radius: 20px; display: inline-block;
+  }
+  .status-safe { background: #e6f9f0; color: #0a6640; }
+  .status-warn { background: var(--warn-bg); color: var(--warn-text); }
+  .status-danger { background: #fdecea; color: var(--danger); }
+
+  .check-btn {
+    width: 100%; margin-top: 20px;
+    background: var(--aqua-500); color: white; border: none;
+    border-radius: 12px; padding: 14px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px; font-weight: 600;
+    cursor: pointer; transition: background 0.2s, transform 0.1s;
+  }
+  .check-btn:hover { background: var(--aqua-600); transform: translateY(-1px); }
+
+  .result-card {
+    background: var(--white); border: 1.5px solid var(--border-strong);
+    border-radius: 14px; padding: 20px; margin-top: 20px;
+    display: none;
+  }
+  .result-card.visible { display: block; }
+  .result-card h3 { font-family: 'Space Grotesk', sans-serif; font-size: 15px; font-weight: 600; color: var(--aqua-800); margin-bottom: 12px; }
+  .result-card p { font-size: 14px; line-height: 1.7; color: var(--text-secondary); white-space: pre-wrap; }
+
+  /* ── SDG FACTS ── */
+  .facts-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); gap: 14px; margin-bottom: 24px; }
+  .fact-card {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 14px; padding: 18px;
+    border-top: 3px solid var(--aqua-400);
+  }
+  .fact-num { font-family: 'Space Grotesk', sans-serif; font-size: 26px; font-weight: 700; color: var(--aqua-500); margin-bottom: 4px; }
+  .fact-label { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
+
+  .tips-list { display: flex; flex-direction: column; gap: 12px; }
+  .tip-item {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 18px;
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .tip-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+  .tip-text h4 { font-size: 14px; font-weight: 500; color: var(--aqua-800); margin-bottom: 3px; }
+  .tip-text p { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+
+  /* ── REPORT ── */
+  .report-form {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 16px; padding: 24px;
+  }
+  .report-form h2 { font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 600; color: var(--aqua-800); margin-bottom: 18px; }
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; font-size: 13px; font-weight: 500; color: var(--text-secondary); margin-bottom: 6px; }
+  .form-group input, .form-group select, .form-group textarea {
+    width: 100%; border: 1.5px solid var(--border-strong);
+    border-radius: 10px; padding: 10px 14px;
+    font-family: 'Inter', sans-serif; font-size: 14px;
+    color: var(--text-primary); background: var(--surface);
+    outline: none; transition: border-color 0.2s;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    border-color: var(--aqua-400); background: var(--white);
+  }
+  .form-group textarea { resize: vertical; min-height: 80px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media(max-width:500px){ .form-row { grid-template-columns: 1fr; } }
+
+  .submit-row { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+  .btn-primary {
+    background: var(--aqua-500); color: white; border: none;
+    border-radius: 10px; padding: 11px 22px;
+    font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: background 0.2s;
+  }
+  .btn-primary:hover { background: var(--aqua-600); }
+  .btn-secondary {
+    background: var(--surface2); color: var(--aqua-700); border: 1px solid var(--border-strong);
+    border-radius: 10px; padding: 11px 22px;
+    font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500;
+    cursor: pointer; transition: background 0.2s;
+  }
+  .btn-secondary:hover { background: var(--aqua-100); }
+
+  .report-output {
+    background: var(--surface2); border: 1.5px solid var(--border-strong);
+    border-radius: 14px; padding: 20px; margin-top: 20px;
+    display: none; white-space: pre-wrap; font-size: 14px;
+    line-height: 1.75; color: var(--text-primary);
+  }
+  .report-output.visible { display: block; }
+
+  /* ── SCROLLBAR ── */
+  .messages::-webkit-scrollbar { width: 4px; }
+  .messages::-webkit-scrollbar-track { background: transparent; }
+  .messages::-webkit-scrollbar-thumb { background: var(--aqua-200); border-radius: 4px; }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center; padding: 16px;
+    font-size: 12px; color: var(--text-muted);
+    border-top: 1px solid var(--border);
+  }
+  footer strong { color: var(--aqua-600); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-ripple"></div>
+  <div class="header-inner">
+    <div class="logo-drop">💧</div>
+    <div class="header-text">
+      <h1>AquaAI</h1>
+      <p>Clean Water & Sanitation Intelligence Tool</p>
+    </div>
+    <div class="sdg-badge">SDG 6</div>
+  </div>
+  <div class="tab-bar">
+    <div class="tab-bar-inner">
+      <button class="tab-btn active" onclick="switchTab('chat', this)">💬 AI Assistant</button>
+      <button class="tab-btn" onclick="switchTab('checker', this)">🔬 Water Quality</button>
+      <button class="tab-btn" onclick="switchTab('facts', this)">📊 SDG 6 Facts</button>
+      <button class="tab-btn" onclick="switchTab('report', this)">📝 Report Issue</button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ── TAB 1: AI CHAT ── -->
+  <div id="tab-chat" class="tab-panel active">
+    <div class="chat-intro">
+      <div class="chat-intro-icon">🤖</div>
+      <div>
+        <h2>Ask me anything about clean water & sanitation</h2>
+        <p>I can help you understand water contamination, purification methods, sanitation solutions, SDG 6 targets, and how communities can access safe water. Powered by Claude AI.</p>
+      </div>
+    </div>
+
+    <div class="quick-chips">
+      <div class="chip" onclick="sendChip(this)">What causes water pollution?</div>
+      <div class="chip" onclick="sendChip(this)">How to purify contaminated water?</div>
+      <div class="chip" onclick="sendChip(this)">What are SDG 6 targets?</div>
+      <div class="chip" onclick="sendChip(this)">Water crisis in India</div>
+      <div class="chip" onclick="sendChip(this)">Best sanitation practices</div>
+      <div class="chip" onclick="sendChip(this)">Rainwater harvesting methods</div>
+    </div>
+
+    <div class="chat-box">
+      <div class="messages" id="messages">
+        <div class="msg ai">
+          <div class="msg-avatar ai">A</div>
+          <div class="msg-bubble">
+            👋 Hello! I'm AquaAI, your clean water and sanitation guide.<br><br>
+            Ask me about water quality, purification techniques, sanitation challenges, or SDG Goal 6 — I'm here to help with accurate, research-backed answers.
+          </div>
+        </div>
+      </div>
+      <div class="chat-input-row">
+        <textarea id="chatInput" placeholder="Ask about water quality, sanitation, or SDG 6…" rows="1"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}"
+          oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px'"></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+          <svg viewBox="0 0 24 24"><path d="M2 21L23 12 2 3v7l15 2-15 2v7z"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAB 2: WATER QUALITY CHECKER ── -->
+  <div id="tab-checker" class="tab-panel">
+    <div class="chat-intro">
+      <div class="chat-intro-icon">🔬</div>
+      <div>
+        <h2>Water Quality Parameter Checker</h2>
+        <p>Adjust the sliders to match your water test readings. The AI will analyse the parameters and tell you if your water is safe to drink.</p>
+      </div>
+    </div>
+
+    <div class="checker-grid">
+      <div class="param-card">
+        <label>pH Level <span id="phVal">7.0</span></label>
+        <input type="range" min="0" max="14" step="0.1" value="7" oninput="updateParam('ph',this.value)">
+        <div id="phStatus" class="param-status status-safe">✓ Safe (6.5–8.5)</div>
+      </div>
+      <div class="param-card">
+        <label>Turbidity (NTU) <span id="turbVal">5</span></label>
+        <input type="range" min="0" max="100" step="1" value="5" oninput="updateParam('turb',this.value)">
+        <div id="turbStatus" class="param-status status-safe">✓ Safe (&lt;5 NTU)</div>
+      </div>
+      <div class="param-card">
+        <label>TDS (mg/L) <span id="tdsVal">300</span></label>
+        <input type="range" min="0" max="2000" step="10" value="300" oninput="updateParam('tds',this.value)">
+        <div id="tdsStatus" class="param-status status-safe">✓ Safe (&lt;500 mg/L)</div>
+      </div>
+      <div class="param-card">
+        <label>Chlorine (mg/L) <span id="clVal">0.5</span></label>
+        <input type="range" min="0" max="5" step="0.1" value="0.5" oninput="updateParam('cl',this.value)">
+        <div id="clStatus" class="param-status status-safe">✓ Safe (0.2–1.0)</div>
+      </div>
+      <div class="param-card">
+        <label>Nitrate (mg/L) <span id="nitVal">10</span></label>
+        <input type="range" min="0" max="100" step="1" value="10" oninput="updateParam('nit',this.value)">
+        <div id="nitStatus" class="param-status status-safe">✓ Safe (&lt;50 mg/L)</div>
+      </div>
+      <div class="param-card">
+        <label>Temperature (°C) <span id="tempVal">25</span></label>
+        <input type="range" min="0" max="60" step="1" value="25" oninput="updateParam('temp',this.value)">
+        <div id="tempStatus" class="param-status status-safe">✓ Normal</div>
+      </div>
+    </div>
+
+    <button class="check-btn" onclick="analyseWater()">🔍 Analyse with AI</button>
+
+    <div id="waterResult" class="result-card">
+      <h3>AI Analysis Result</h3>
+      <p id="waterResultText"></p>
+    </div>
+  </div>
+
+  <!-- ── TAB 3: FACTS ── -->
+  <div id="tab-facts" class="tab-panel">
+    <div class="facts-grid">
+      <div class="fact-card">
+        <div class="fact-num">2.2B</div>
+        <div class="fact-label">People lack access to safely managed drinking water worldwide</div>
+      </div>
+      <div class="fact-card">
+        <div class="fact-num">4.2B</div>
+        <div class="fact-label">People lack access to safely managed sanitation services</div>
+      </div>
+      <div class="fact-card">
+        <div class="fact-num">297K</div>
+        <div class="fact-label">Children under 5 die each year from diarrhoeal diseases linked to dirty water</div>
+      </div>
+      <div class="fact-card">
+        <div class="fact-num">800M</div>
+        <div class="fact-label">People practice open defecation, causing serious health hazards</div>
+      </div>
+      <div class="fact-card">
+        <div class="fact-num">6.38B</div>
+        <div class="fact-label">People lack safely managed handwashing facilities at home</div>
+      </div>
+      <div class="fact-card">
+        <div class="fact-num">80%</div>
+        <div class="fact-label">Of wastewater flows back into the environment without treatment</div>
+      </div>
+    </div>
+
+    <div class="tips-list">
+      <h3 style="font-family:'Space Grotesk',sans-serif; font-size:16px; font-weight:600; color:var(--aqua-800); margin-bottom:8px">💡 Solutions & Best Practices</h3>
+      <div class="tip-item">
+        <div class="tip-icon">🌧️</div>
+        <div class="tip-text">
+          <h4>Rainwater Harvesting</h4>
+          <p>Collecting and storing rainwater for domestic use reduces dependency on groundwater and helps in drought-prone regions.</p>
+        </div>
+      </div>
+      <div class="tip-item">
+        <div class="tip-icon">☀️</div>
+        <div class="tip-text">
+          <h4>Solar Disinfection (SODIS)</h4>
+          <p>Exposing clear PET bottles to direct sunlight for 6+ hours kills pathogens — a low-cost method for rural communities.</p>
+        </div>
+      </div>
+      <div class="tip-item">
+        <div class="tip-icon">🪴</div>
+        <div class="tip-text">
+          <h4>Constructed Wetlands</h4>
+          <p>Natural wetland plants filter and treat wastewater biologically — a sustainable alternative to chemical treatment plants.</p>
+        </div>
+      </div>
+      <div class="tip-item">
+        <div class="tip-icon">🤝</div>
+        <div class="tip-text">
+          <h4>Community-Led Sanitation (CLTS)</h4>
+          <p>Empowering communities to analyse their own sanitation situation and take collective action to end open defecation.</p>
+        </div>
+      </div>
+      <div class="tip-item">
+        <div class="tip-icon">📱</div>
+        <div class="tip-text">
+          <h4>Smart Water Monitoring</h4>
+          <p>IoT sensors and mobile apps can detect contamination in real-time, allowing faster response to water quality issues.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAB 4: REPORT ── -->
+  <div id="tab-report" class="tab-panel">
+    <div class="report-form">
+      <h2>📝 Report a Water or Sanitation Issue</h2>
+      <p style="font-size:13px; color:var(--text-muted); margin-bottom:20px">Describe the problem in your area. The AI will generate a formal issue report you can submit to local authorities.</p>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Your Name</label>
+          <input type="text" id="reportName" placeholder="Full name">
+        </div>
+        <div class="form-group">
+          <label>Location / Area</label>
+          <input type="text" id="reportLocation" placeholder="Village, town, district">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Issue Type</label>
+          <select id="reportType">
+            <option value="">Select issue type</option>
+            <option>Contaminated drinking water</option>
+            <option>No access to clean water</option>
+            <option>Broken water supply pipe</option>
+            <option>Open drain / sewage overflow</option>
+            <option>Lack of proper toilets</option>
+            <option>Industrial water pollution</option>
+            <option>Waterlogging / flooding</option>
+            <option>Other sanitation problem</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Severity</label>
+          <select id="reportSeverity">
+            <option value="">Select severity</option>
+            <option>Low — inconvenience only</option>
+            <option>Medium — affecting daily life</option>
+            <option>High — health risk present</option>
+            <option>Critical — immediate action needed</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Describe the Problem</label>
+        <textarea id="reportDesc" placeholder="Explain what you observed — smell, colour, illness cases, number of people affected…"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Estimated People Affected</label>
+        <input type="number" id="reportPeople" placeholder="e.g. 200">
+      </div>
+
+      <div class="submit-row">
+        <button class="btn-primary" onclick="generateReport()">🤖 Generate AI Report</button>
+        <button class="btn-secondary" onclick="clearReportForm()">Clear Form</button>
+      </div>
+    </div>
+
+    <div id="reportOutput" class="report-output"></div>
+  </div>
+
+</main>
+
+<footer>
+  <strong>AquaAI</strong> · SDG 6: Clean Water & Sanitation · ESD Project · Powered by Claude AI
+</footer>
+
+<script>
+const API_URL = "https://api.anthropic.com/v1/messages";
+
+/* ── TAB SWITCHING ── */
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+/* ── CHAT ── */
+const chatHistory = [];
+const systemPrompt = `You are AquaAI, an expert AI assistant specializing in clean water, water quality, sanitation, and the UN Sustainable Development Goal 6 (SDG 6). 
+
+Your role:
+- Answer questions about water contamination, purification methods, waterborne diseases, sanitation solutions
+- Explain SDG 6 targets and global water crisis data with accuracy
+- Give practical, community-level solutions for water and sanitation problems
+- Focus on solutions relevant to India and developing nations where appropriate
+- Be clear, helpful, and compassionate — many users may be facing real water crises
+
+Keep answers concise (under 200 words) but informative. Use simple language. Always be helpful and supportive.`;
+
+async function callAI(userMessage) {
+  chatHistory.push({ role: "user", content: userMessage });
+  const response = await fetch(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-6",
+      max_tokens: 1000,
+      system: systemPrompt,
+      messages: chatHistory
+    })
+  });
+  const data = await response.json();
+  const reply = data.content[0].text;
+  chatHistory.push({ role: "assistant", content: reply });
+  return reply;
+}
+
+function addMessage(text, role) {
+  const msgs = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = `msg ${role}`;
+  div.innerHTML = `
+    <div class="msg-avatar ${role}">${role === 'ai' ? 'A' : '👤'}</div>
+    <div class="msg-bubble">${text.replace(/\n/g,'<br>')}</div>
+  `;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return div;
+}
+
+function addTyping() {
+  const msgs = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = 'msg ai'; div.id = 'typing';
+  div.innerHTML = `<div class="msg-avatar ai">A</div><div class="msg-bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = ''; input.style.height = 'auto';
+  document.getElementById('sendBtn').disabled = true;
+  addMessage(text, 'user');
+  addTyping();
+  try {
+    const reply = await callAI(text);
+    document.getElementById('typing')?.remove();
+    addMessage(reply, 'ai');
+  } catch(e) {
+    document.getElementById('typing')?.remove();
+    addMessage('⚠️ Connection error. Please try again.', 'ai');
+  }
+  document.getElementById('sendBtn').disabled = false;
+}
+
+function sendChip(el) {
+  document.getElementById('chatInput').value = el.textContent;
+  sendMessage();
+}
+
+/* ── WATER QUALITY CHECKER ── */
+const params = { ph: 7.0, turb: 5, tds: 300, cl: 0.5, nit: 10, temp: 25 };
+
+function updateParam(key, val) {
+  params[key] = parseFloat(val);
+  document.getElementById(key + 'Val').textContent = val;
+  const statuses = {
+    ph:   [v => v >= 6.5 && v <= 8.5, v => v >= 6.0 && v < 6.5 || v > 8.5 && v <= 9.5],
+    turb: [v => v <= 5, v => v <= 25],
+    tds:  [v => v <= 500, v => v <= 1000],
+    cl:   [v => v >= 0.2 && v <= 1.0, v => v >= 0.1 && v <= 4.0],
+    nit:  [v => v <= 50, v => v <= 80],
+    temp: [v => v <= 30, v => v <= 40]
+  };
+  const el = document.getElementById(key + 'Status');
+  const [safe, warn] = statuses[key];
+  const labels = {
+    ph: ['✓ Safe (6.5–8.5)', '⚠ Marginal', '✗ Unsafe'],
+    turb: ['✓ Safe (<5 NTU)', '⚠ Moderate', '✗ High turbidity'],
+    tds: ['✓ Safe (<500 mg/L)', '⚠ Moderate', '✗ Too high'],
+    cl: ['✓ Safe (0.2–1.0)', '⚠ Check level', '✗ Unsafe'],
+    nit: ['✓ Safe (<50 mg/L)', '⚠ Elevated', '✗ Dangerous'],
+    temp: ['✓ Normal', '⚠ Elevated', '✗ Too high']
+  };
+  el.className = 'param-status ' + (safe(params[key]) ? 'status-safe' : warn(params[key]) ? 'status-warn' : 'status-danger');
+  el.textContent = safe(params[key]) ? labels[key][0] : warn(params[key]) ? labels[key][1] : labels[key][2];
+}
+
+async function analyseWater() {
+  const btn = document.querySelector('.check-btn');
+  btn.textContent = '⏳ Analysing…'; btn.disabled = true;
+  const prompt = `Analyse this water quality data and give a safety assessment:
+pH: ${params.ph}
+Turbidity: ${params.turb} NTU
+TDS: ${params.tds} mg/L
+Chlorine: ${params.cl} mg/L
+Nitrate: ${params.nit} mg/L
+Temperature: ${params.temp}°C
+
+Provide: 1) Overall safety verdict (Safe/Marginal/Unsafe), 2) Key concerns if any, 3) Recommended treatment steps. Keep it practical and clear.`;
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6", max_tokens: 1000,
+        system: "You are a water quality expert. Analyse water parameters and give practical safety advice. Be clear and direct.",
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+    const data = await res.json();
+    document.getElementById('waterResultText').textContent = data.content[0].text;
+    const rc = document.getElementById('waterResult');
+    rc.classList.add('visible'); rc.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } catch(e) {
+    document.getElementById('waterResultText').textContent = 'Error analysing. Please check your connection.';
+    document.getElementById('waterResult').classList.add('visible');
+  }
+  btn.textContent = '🔍 Analyse with AI'; btn.disabled = false;
+}
+
+/* ── REPORT GENERATOR ── */
+async function generateReport() {
+  const name = document.getElementById('reportName').value.trim();
+  const location = document.getElementById('reportLocation').value.trim();
+  const type = document.getElementById('reportType').value;
+  const severity = document.getElementById('reportSeverity').value;
+  const desc = document.getElementById('reportDesc').value.trim();
+  const people = document.getElementById('reportPeople').value;
+
+  if (!location || !type || !desc) {
+    alert('Please fill in location, issue type, and description.'); return;
+  }
+
+  const out = document.getElementById('reportOutput');
+  out.className = 'report-output visible';
+  out.textContent = '⏳ Generating formal report…';
+
+  const prompt = `Generate a formal water/sanitation issue report for submission to local authorities:
+
+Reporter: ${name || 'Anonymous'}
+Location: ${location}
+Issue Type: ${type}
+Severity: ${severity}
+People Affected: ${people || 'Unknown'}
+Description: ${desc}
+
+Write a professional, formal complaint/report letter addressed to the local municipal authority or District Collector. Include: date, reference subject line, clear description, urgency based on severity, and requested action. Format it as an official letter.`;
+
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6", max_tokens: 1000,
+        system: "You are an expert in writing formal government complaint letters about water and sanitation issues in India. Write clear, professional, formal letters that are effective for getting government action.",
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+    const data = await res.json();
+    out.textContent = data.content[0].text;
+  } catch(e) {
+    out.textContent = 'Error generating report. Please try again.';
+  }
+}
+
+function clearReportForm() {
+  ['reportName','reportLocation','reportType','reportSeverity','reportDesc','reportPeople'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.value = '';
+  });
+  const out = document.getElementById('reportOutput');
+  out.classList.remove('visible'); out.textContent = '';
+}
+</script>
+</body>
+</html>
